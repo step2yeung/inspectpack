@@ -214,6 +214,13 @@ const modulesByPackageNameByPackagePath = (
     pkgMap[pkgPath] = (pkgMap[pkgPath] || []).concat(mod);
   });
 
+  // Now, remove any single item keys (no duplicates).
+  Object.keys(modsMap).forEach((pkgName) => {
+    if (Object.keys(modsMap[pkgName]).length === 1) {
+      delete modsMap[pkgName];
+    }
+  });
+
   return modsMap;
 };
 
@@ -265,7 +272,7 @@ interface IVersionsAsset {
   packages: IVersionsPackages;
 }
 
-export interface IVersionsDataAssets {
+interface IVersionsDataAssets {
   [asset: string]: IVersionsAsset;
 }
 
@@ -329,20 +336,10 @@ const getAssetData = (
   commonRoot: string,
   allDeps: (IDependencies | null)[],
   mods: IModule[],
-  duplicatesOnly: boolean,
 ): IVersionsAsset => {
   // Start assembling and merging in deps for each package root.
   const data = createEmptyAsset();
   const modsMap = modulesByPackageNameByPackagePath(mods);
-
-  if (duplicatesOnly) {
-    // Now, remove any single item keys (no duplicates).
-    Object.keys(modsMap).forEach((pkgName) => {
-      if (Object.keys(modsMap[pkgName]).length === 1) {
-        delete modsMap[pkgName];
-      }
-    });
-  }
 
   allDeps.forEach((deps) => {
     // Skip nulls.
@@ -479,7 +476,7 @@ class Versions extends Action {
           // Create root data without meta summary.
           const assetsData: IVersionsDataAssets = {};
           assetNames.forEach((assetName) => {
-            assetsData[assetName] = getAssetData(commonRoot, allDeps, assets[assetName].mods, this.duplicatesOnly);
+            assetsData[assetName] = getAssetData(commonRoot, allDeps, assets[assetName].mods);
           });
           const data: IVersionsData =  Object.assign(createEmptyData(), {
             assets: assetsData,

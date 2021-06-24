@@ -25,7 +25,6 @@ import { sort } from "../util/strings";
 export interface IActionConstructor {
   stats: IWebpackStats;
   ignoredPackages?: (string | RegExp)[];
-  duplicatesOnly?: boolean;
 }
 
 export interface IModulesByAsset {
@@ -146,13 +145,11 @@ export abstract class Action {
   private _assets?: IModulesByAsset;
   private _template?: ITemplate;
   private _ignoredPackages: (string | RegExp)[];
-  private _duplicatesOnly: boolean;
 
-  constructor({ stats, ignoredPackages, duplicatesOnly }: IActionConstructor) {
+  constructor({ stats, ignoredPackages }: IActionConstructor) {
     this.stats = stats;
     this._ignoredPackages = (ignoredPackages || [])
       .map((pattern) => typeof pattern === "string" ? `${pattern}/` : pattern);
-    this._duplicatesOnly = duplicatesOnly !== false;
   }
 
   public validate(): Promise<IAction> {
@@ -181,10 +178,6 @@ export abstract class Action {
   // Flat array of webpack source modules only. (Memoized)
   public get modules(): IModule[] {
     return this._modules = this._modules || this.getSourceMods(this.stats.modules);
-  }
-
-  public get duplicatesOnly(): boolean {
-    return this._duplicatesOnly;
   }
 
   // Whether or not we consider the data to indicate we should bail with error.

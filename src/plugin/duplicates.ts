@@ -3,8 +3,9 @@ import semverCompare = require("semver-compare");
 import { actions } from "../lib";
 import { IDuplicatesData, IDuplicatesFiles } from "../lib/actions/duplicates";
 import { _packageName, IVersionsData } from "../lib/actions/versions";
+import { IWebpackStats } from "../lib/interfaces/webpack-stats";
+import { INpmPackageBase } from "../lib/util/dependencies";
 import { numF, sort } from "../lib/util/strings";
-import { pkgNamePath, ICompiler, ICompilation } from "./common";
 
 // ----------------------------------------------------------------------------
 // Interfaces
@@ -14,6 +15,19 @@ import { pkgNamePath, ICompiler, ICompilation } from "./common";
 // See, e.g. https://github.com/TypeStrong/ts-loader/blob/master/src/interfaces.ts
 
 // Permissive compiler type that spans webpack v1 - current.
+interface ICompiler {
+  hooks?: any;
+  plugin?: (name: string, callback: () => void) => void;
+}
+
+export interface ICompilation {
+  errors: Error[];
+  warnings: Error[];
+  getStats: () => {
+    toJson: (opts: object) => IWebpackStats;
+  };
+}
+
 interface IDuplicatesByFileModule {
   baseName: string;
   bytes: number;
@@ -55,6 +69,12 @@ const shortPath = (filePath: string, pkgName: string) => {
 
   return short;
 };
+
+// `duplicates-cjs@1.2.3 -> different-foo@1.1.1 -> foo@3.3.3`
+const pkgNamePath = (pkgParts: INpmPackageBase[]) => pkgParts.reduce(
+  (m, part) => `${m}${m ? " -> " : ""}${part.name}@${part.range}`,
+  "",
+);
 
 // Organize duplicates by package name.
 const getDuplicatesByFile = (files: IDuplicatesFiles) => {
