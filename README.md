@@ -13,7 +13,7 @@ An inspection tool for Webpack frontend JavaScript bundles.
 It is also the engine for the handy [`webpack-dashboard`](https://github.com/FormidableLabs/webpack-dashboard) plugin.
 
 - [DuplicatePlugin](#duplicatesPlugin)
-- [VersionsPlugin](#versionsplugin)
+- [VersionCheckPlugin](#versionCheckPlugin)
 - [Command line tool](#command-line-tool)
   - [`duplicates`](#duplicates)
   - [`versions`](#versions)
@@ -287,9 +287,9 @@ module.exports = {
   // ...
   plugins: [
     // ...
-    new VersionsPlugin({
-      // Emit compilation warning or error? (Default: `false`)
-      emitErrors: false,
+    new VersionCheckPlugin({
+      // Emit compilation warning or error? (Default: `true`)
+      emitErrors: true,
       // Handle all messages with handler function (`(report: string)`)
       // Overrides `emitErrors` output.
       emitHandler: undefined,

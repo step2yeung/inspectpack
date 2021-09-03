@@ -42,7 +42,7 @@ const getVersionsInfo = (assetName: string, pkgName:string, assets: IVersionsDat
   Object.keys(assets[assetName].packages[pkgName])
   .sort(semverCompare)
   .forEach((version) => {
-    versionsInfo.push(chalk`  {gray * ${version} ${deduped ? '(bundled)' : ''}}`);
+    versionsInfo.push(chalk`  {gray * ${version}${deduped ? ' (bundled)' : ''}}`);
     Object.keys(assets[assetName].packages[pkgName][version])
       .sort(sort)
       .forEach((filePath) => {
@@ -232,7 +232,7 @@ export class VersionCheckPlugin {
 
   constructor({verbose, emitErrors, emitHandler, ignoredPackages, allowedVersions}: IVersionsCheckPluginConstructor = {}) {
     this.opts = {
-      emitErrors: emitErrors === true, // default `false`
+      emitErrors: emitErrors !== false, // default `true`
       emitHandler: typeof emitHandler === "function" ? emitHandler : undefined,
       ignoredPackages: Array.isArray(ignoredPackages) ? ignoredPackages : undefined,
       verbose: verbose === true, // default `false`
@@ -283,23 +283,21 @@ export class VersionCheckPlugin {
         let report = [];
         if (versionViolations.length > 0) {
           report.push(chalk`{bold.underline Versions violations}`);
-          report.push('Inspectpack versionsPlugin found the following packages violating the allowedVersions specified:\n');
+          report.push('Inspectpack versionsPlugin found the following packages violating the allowedVersions specified:');
+          report.push('');
           report.push(...versionViolations);
         }
 
         if (verbose) {
           report.unshift(...verboseOutput)
         }
-        const output = report.join("\n    ");
+        const reportStr = report.map(msg => `    ${msg}`.trimEnd()).join("\n");
         // Drain messages into custom handler or warnings/errors.
         if (emitHandler) {
-          emitHandler(output);
-        } else {
-          if (emitErrors && versionViolations.length > 0 ) {
-            errors.push(new Error(output));
-          } else {
-            warnings.push(new Error(output));
-          }
+          emitHandler(reportStr);
+        } else if (report.length > 0){
+          const output = (emitErrors && versionViolations.length > 0) ? errors : warnings;
+          output.push(new Error(reportStr));
         }
       })
     // Handle old plugin API callback.
