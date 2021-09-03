@@ -114,7 +114,7 @@ describe("plugin/versionCheck", () => {
       expect(isAllowedVersionViolated(allowedVersions, 'my-addon', packages)).to.eql(false);
     });
   });
-  describe.only("VersionCheckPlugin", () => {
+  describe("VersionCheckPlugin", () => {
     VERSIONS.forEach((vers) => {
       // Mock compilation:
       let compilation: ICompilation;
@@ -222,7 +222,7 @@ describe("plugin/versionCheck", () => {
           (chalk as any).level = origChalkLevel;
         });
 
-        it(`produces a default report`, () => {
+        it(`emits errors when allowedVersions is violated`, () => {
           const plugin = new VersionCheckPlugin({
             allowedVersions: {
               'foo': '^1.2.0'
@@ -239,7 +239,7 @@ describe("plugin/versionCheck", () => {
           });
         });
 
-        it(`produces a verbose report`, () => {
+        it(`emits errors with verbose report when allowedVersions is violated`, () => {
           const plugin = new VersionCheckPlugin({
             allowedVersions: {
               'foo': '^1.2.0'
@@ -273,19 +273,7 @@ describe("plugin/versionCheck", () => {
           });
         });
 
-        it(`produces no report when no violations occur`, () => {
-          const plugin = new VersionCheckPlugin({
-            allowedVersions: {},
-            verbose: false,
-          });
-
-          return plugin.analyze(compilation).then(() => {
-            expect(compilation.warnings).to.eql([]);
-            expect(compilation.errors).to.eql([]);
-          });
-        });
-
-        it(`produces a verbose report`, () => {
+        it(`produces a verbose report with version violation when emitErrors is false`, () => {
           const plugin = new VersionCheckPlugin({
             allowedVersions: {
               'foo': '^1.2.0'
@@ -301,6 +289,35 @@ describe("plugin/versionCheck", () => {
               .to.have.property("0").that
                 .is.an("Error").and
                 .has.property("message", verboseFailureReport);
+          });
+        });
+
+        it(`produces no report when no violations occur`, () => {
+          const plugin = new VersionCheckPlugin({
+            allowedVersions: {},
+            verbose: false,
+          });
+
+          return plugin.analyze(compilation).then(() => {
+            expect(compilation.warnings).to.eql([]);
+            expect(compilation.errors).to.eql([]);
+          });
+        });
+
+        it(`ignorePackage ignore packages that would have violated allowedVersions`, () => {
+          const plugin = new VersionCheckPlugin({
+            ignoredPackages:[
+              'foo'
+            ],
+            allowedVersions: {
+              'foo': '^1.2.0'
+            },
+            verbose: false,
+          });
+
+          return plugin.analyze(compilation).then(() => {
+            expect(compilation.errors).to.eql([]);
+            expect(compilation.warnings).to.eql([]);
           });
         });
       });
