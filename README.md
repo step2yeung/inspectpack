@@ -13,7 +13,7 @@ An inspection tool for Webpack frontend JavaScript bundles.
 It is also the engine for the handy [`webpack-dashboard`](https://github.com/FormidableLabs/webpack-dashboard) plugin.
 
 - [DuplicatePlugin](#duplicatesPlugin)
-- [VersionsPlugin](#versionsplugin)
+- [VersionCheckPlugin](#versionCheckPlugin)
 - [Command line tool](#command-line-tool)
   - [`duplicates`](#duplicates)
   - [`versions`](#versions)
@@ -274,22 +274,22 @@ Specifying a [`resolutions`](https://yarnpkg.com/lang/en/docs/selective-version-
 
 Similar to `resolve.alias`, because you can get outside the guarantees of semantic versioning with this tool, be sure to check that your overall application supports the finalized code in the bundle.
 
-## VersionsPlugin
+## VersionCheckPlugin
 
-The `VersionsPlugin` reports on multiple versions of packages installed in your `node_modules` tree that have version skews and have 2+ files included in your bundle under inspection.
+The `VersionCheckPlugin` validates the versions of packages your bundle under inspection and can provide a verbose report of version(s) of packages included in your bundle. This allows you to control the version(s) of packages in your bundle, preventing unexpected changes in versions.
 
 To start using, add the plugin to your `webpack.config.js` file:
 
 ```js
-const { VersionsPlugin } = require("inspectpack/plugin");
+const { VersionCheckPlugin } = require("inspectpack/plugin");
 
 module.exports = {
   // ...
   plugins: [
     // ...
-    new VersionsPlugin({
-      // Emit compilation warning or error? (Default: `false`)
-      emitErrors: false,
+    new VersionCheckPlugin({
+      // Emit compilation warning or error? (Default: `true`)
+      emitErrors: true,
       // Handle all messages with handler function (`(report: string)`)
       // Overrides `emitErrors` output.
       emitHandler: undefined,
@@ -300,17 +300,16 @@ module.exports = {
       //
       // **Note**: Uses posix paths for all matching (e.g., on windows `/` not `\`).
       ignoredPackages: undefined,
-      // Display full duplicates information? (Default: `false`)
+      // Display full version report? (Default: `false`)
       verbose: false,
-      // Report version information of duplicate packages only? (Default: `true`)
-      duplicatesOnly: true
+      // List of packages & semver it should adhear to
+      allowedVersions: {
+        'lodash': '^4.0.0'
+      }
     })
   ]
 };
 ```
-
-With `duplicatesOnly` set to `false`, the plugin will report the version of each packages that gets bundled into each asset.
-This allows us to understand the version(s) of each package that is bundled in our assets.
 
 ## Command line tool
 
