@@ -1,6 +1,6 @@
 {
   "name": "@step2yeung/inspectpack",
-  "version": "4.7.1",
+  "version": "4.7.2",
   "description": "An inspection tool for Webpack frontend JavaScript bundles.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
